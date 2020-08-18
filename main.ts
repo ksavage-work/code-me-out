@@ -20,6 +20,7 @@ namespace SpriteKind {
     export const Door = SpriteKind.create()
     export const Lava = SpriteKind.create()
     export const Tornado = SpriteKind.create()
+    export const Ice = SpriteKind.create()
 }
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Bumper, function (sprite, otherSprite) {
     info.changeLifeBy(-1)
@@ -97,6 +98,9 @@ function attemptJump () {
         canDoubleJump = false
     }
 }
+controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
+    freezeLava()
+})
 function animateIdle () {
     mainIdleLeft = animation.createAnimation(ActionKind.IdleLeft, 100)
     animation.attachAnimation(hero, mainIdleLeft)
@@ -140,28 +144,45 @@ function animateIdle () {
         `)
 }
 function freezeLava () {
-	
+    iceRay = sprites.createProjectileFromSprite(img`
+        6 6 6 . . . . . . . . . . . . . 
+        6 1 1 . . . . . . . . . . . . . 
+        6 1 1 6 6 1 . . . . . . . . . . 
+        . . 6 6 9 1 c c 6 . . . . . . . 
+        . . 6 9 1 1 1 c 6 6 . . . . . . 
+        . . 1 1 1 1 1 1 6 6 1 1 1 . . . 
+        . . . 1 6 6 6 6 1 6 1 1 c 1 . . 
+        . . . 6 6 6 1 1 1 6 1 c c c 1 6 
+        . . . c c 1 6 1 1 9 6 6 6 c 1 6 
+        . . . . . 1 6 1 6 6 6 6 1 1 1 6 
+        . . . . . 1 6 6 9 1 1 1 1 9 6 6 
+        . . . . . 1 6 6 c 1 1 1 1 6 6 6 
+        . . . . . 1 1 6 c c 1 1 9 6 1 6 
+        . . . . . 1 1 c c 1 9 6 6 1 1 6 
+        . . . . . . . . 1 1 6 6 1 1 1 6 
+        . . . . . . . . 6 6 6 6 6 6 6 6 
+        `, hero, 44, 50)
 }
 function unlockDoor () {
     for (let value of scene.getTilesByType(10)) {
         // image should be opened door
         scene.setTile(10, img`
-            c c c c c c c c c c c c c c c c 
-            8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 
-            8 8 8 6 6 6 8 8 8 6 6 6 6 8 8 8 
-            6 6 8 8 8 6 6 6 6 6 6 8 8 8 8 6 
-            6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 
-            9 9 6 6 6 6 6 9 9 9 9 6 6 6 9 9 
-            6 6 6 6 9 9 9 6 6 6 9 9 9 9 9 9 
             9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
-            9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
-            9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
-            9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
-            9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
-            9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
-            9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
-            9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
-            9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+            e e e e e e e e e e e e e e 9 9 
+            e e e e e e e e e e e e e e 9 9 
+            e e f f f e f f f e e e e e 9 9 
+            e e f e f e f e f e e e e e 9 9 
+            e e f e f e f e f e e e e e 9 9 
+            e e f e f e f e f e e e e e 9 9 
+            e e f e f e f e f e e e 5 e 9 9 
+            e e f e f e f e f e e 5 5 e 9 9 
+            e e f e f e f e f e e e 5 e 9 9 
+            e e f e f e f e f e e e e e 9 9 
+            e e f e f e f e f e e e e e 9 9 
+            e e f f f e f f f e e e e e 9 9 
+            e e e e e e e e e e e e e e 9 9 
+            e e e e e e e e e e e e e e 9 9 
+            e e e e e e e e e e e e e e 9 9 
             `, false)
         door.destroy()
     }
@@ -1009,22 +1030,22 @@ function createObstacles () {
     for (let value of scene.getTilesByType(10)) {
         // Don't have door image yet
         door = sprites.create(img`
-            . . . . . . . 6 . . . . . . . . 
-            . . . . . . 8 6 6 . . . 6 8 . . 
-            . . . e e e 8 8 6 6 . 6 7 8 . . 
-            . . e 2 2 2 2 e 8 6 6 7 6 . . . 
-            . e 2 2 4 4 2 7 7 7 7 7 8 6 . . 
-            . e 2 4 4 2 6 7 7 7 6 7 6 8 8 . 
-            e 2 4 5 2 2 6 7 7 6 2 7 7 6 . . 
-            e 2 4 4 2 2 6 7 6 2 2 6 7 7 6 . 
-            e 2 4 2 2 2 6 6 2 2 2 e 7 7 6 . 
-            e 2 4 2 2 4 2 2 2 4 2 2 e 7 6 . 
-            e 2 4 2 2 2 2 2 2 2 2 2 e c 6 . 
-            e 2 2 2 2 2 2 2 4 e 2 e e c . . 
-            e e 2 e 2 2 4 2 2 e e e c . . . 
-            e e e e 2 e 2 2 e e e c . . . . 
-            e e e 2 e e c e c c c . . . . . 
-            . c c c c c c c . . . . . . . . 
+            e e e e e e e e e e e e e e e e 
+            e e e e e e e e e e e e e e e e 
+            e e f f f f e e f f f f e e e e 
+            e e f e e f e e f e e f e e e e 
+            e e f e e f e e f e e f e e e e 
+            e e f e e f e e f e e f e e e e 
+            e e f e e f e e f e e f e e 5 e 
+            e e f e e f e e f e e f e e 5 e 
+            e e f e e f e e f e e f e e 5 e 
+            e e f e e f e e f e e f e e e e 
+            e e f e e f e e f e e f e e e e 
+            e e f e e f e e f e e f e e e e 
+            e e f e e f e e f e e f e e e e 
+            e e f f f f e e f f f f e e e e 
+            e e e e e e e e e e e e e e e e 
+            e e e e e e e e e e e e e e e e 
             `, SpriteKind.Door)
         value.place(door)
     }
@@ -1116,7 +1137,35 @@ function spawnGoals () {
         . . . f f f f f f f f f f . . . 
         `, SpriteKind.Goal), 14)
 }
+// Freezing lava 
+// (lave--> ice cube)
+sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Lava, function (sprite, otherSprite) {
+    sprite.destroy()
+    otherSprite.startEffect(effects.blizzard)
+    iceCube = sprites.create(img`
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+        1 9 9 9 9 1 1 1 1 1 9 9 1 9 9 1 
+        1 9 9 9 1 1 1 1 1 1 9 9 1 1 9 1 
+        1 9 9 1 1 1 1 1 9 9 9 1 1 1 1 1 
+        1 9 1 1 1 1 1 9 9 9 1 1 1 1 1 1 
+        1 1 1 1 1 1 9 9 1 1 1 1 1 1 1 1 
+        1 1 1 1 1 1 9 9 1 1 1 1 1 1 1 1 
+        1 1 1 1 9 9 9 1 1 1 1 1 1 9 1 1 
+        1 1 1 1 9 9 1 1 1 1 1 1 9 1 1 1 
+        1 1 1 9 9 1 1 1 1 1 1 9 1 1 1 1 
+        1 1 9 9 1 1 1 1 1 1 1 1 1 1 1 1 
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 9 1 
+        1 1 1 1 1 1 1 1 1 1 1 1 1 9 9 1 
+        1 9 1 1 1 1 1 1 1 1 1 1 9 9 9 1 
+        1 9 9 1 1 1 9 9 1 1 1 9 9 9 9 1 
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+        `, SpriteKind.Ice)
+    iceCube.x = otherSprite.x
+    iceCube.y = otherSprite.y
+    otherSprite.destroy()
+})
 let heroFacingLeft = false
+let iceCube: Sprite = null
 let lava: Sprite = null
 let enemy2: Sprite = null
 let bumper: Sprite = null
@@ -1128,6 +1177,7 @@ let mainJumpLeft: animation.Animation = null
 let mainRunRight: animation.Animation = null
 let mainRunLeft: animation.Animation = null
 let door: Sprite = null
+let iceRay: Sprite = null
 let mainIdleRight: animation.Animation = null
 let mainIdleLeft: animation.Animation = null
 let doubleJumpSpeed = 0
@@ -1163,14 +1213,14 @@ pixelsToMeters = 30
 gravity = 9.81 * pixelsToMeters
 levelMaps = [
 img`
-    . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 
-    . . . . . . . . 5 . . . . . . . . . . . . . . . . . . . . . . . 
-    . . . . 5 . . . . . . . . . . . . . . . . . . . . . . . . . . . 
-    . 1 . . . . . . . . . 5 . 7 . . . 2 7 . . . . . . . . . . . . . 
-    . . . . . . . . 7 . . 5 . 7 . . . . 7 . . . . . . . . . . . . 7 
-    . . . . a . . . 7 3 . . 7 7 . . . 2 7 . 2 . . 2 . 7 . e . . . 7 
-    f f f f 7 b b b 7 f f f f 7 f f f f 7 f f f f f f 7 f f f f f 7 
+    . . . . 7 . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+    . . . . 7 . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+    . . . . 7 . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+    . . . . 7 . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+    . 1 . . 7 . . . . . . . . . . . . 2 7 . . . . . . . . . . . . . 
+    . . . . 7 . . . . . . . . 7 . . . . 7 . . . . . . . . . . . . 7 
+    . . . . a . . . . . . . . 7 . 3 . 2 7 . 2 . . 2 . 7 . e . . . 7 
+    f f f f 7 f f b b b b b b 7 f f f f 7 f f f f f f 7 f f f f f 7 
     `,
 img`
     . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 
